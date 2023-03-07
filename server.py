@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
-# Copyright 2013 Abram Hindle
+# Copyright 2023 Jacob Libbus
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -74,7 +74,7 @@ def flask_post_json():
 @app.route("/")
 def hello():
     '''Return something coherent here.. perhaps redirect to /static/index.html '''
-    return flask.redirect('/static/index.html')
+    return flask.redirect('/static/index.html', code=302)
 
 @app.route("/entity/<entity>", methods=['POST','PUT'])
 def update(entity):
@@ -88,20 +88,24 @@ def update(entity):
 @app.route("/world", methods=['POST','GET'])    
 def world():
     '''you should probably return the world here'''
-    return flask.Response(json.dumps(myWorld.world()), status=200, mimetype='application/json')
+    if request.method == 'GET':
+        return flask.Response(json.dumps(myWorld.world()), status=200, mimetype='application/json')
+    else: 
+        return flask.Response(status=405)
 
 
 @app.route("/entity/<entity>")    
 def get_entity(entity):
     '''This is the GET version of the entity interface, return a representation of the entity'''
-    response = flask.Response(json.dumps(myWorld.get(entity)), status=200, mimetype='application/json')
-    return response
+    if request.method == "GET":
+        return flask.Response(json.dumps(myWorld.get(entity)), status=200, mimetype='application/json')
+    return flask.Response(status=405)
 
 @app.route("/clear", methods=['POST','GET'])
 def clear():
     '''Clear the world out!'''
     myWorld.clear()
-    return flask.Response(status=200, mimetype='application/json')
+    return flask.Response(json.dumps(myWorld.world()), status=200, mimetype='application/json')
 
 if __name__ == "__main__":
     app.run()
